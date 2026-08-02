@@ -1,0 +1,12 @@
+pandas==2.3.3
+numpy==2.2.6
+scikit-learn==1.8.0
+mlflow==3.14.0
+feast==0.65.0
+joblib==1.4.2
+pyarrow==18.1.0
+matplotlib==3.10.0
+pytest==8.3.4
+dvc[gs]==3.56.0
+gcsfs==2024.10.0
+google-cloud-storage==2.19.0

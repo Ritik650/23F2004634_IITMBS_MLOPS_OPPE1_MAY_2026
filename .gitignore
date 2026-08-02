@@ -1,0 +1,14 @@
+processed/
+StockAnalyticaData/
+feature_repo/data/*.parquet
+feature_repo/data/registry.db
+feature_repo/data/online_store.db
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.pytest_cache/
+confusion.png
+metrics.json
+report.md
+pytest_output.txt
+*.mp4

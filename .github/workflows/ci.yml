@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
+
+jobs:
+  test-and-report:
+    runs-on: ubuntu-latest
+    env:
+      MLFLOW_TRACKING_URI: sqlite:///mlflow.db
+      TEST_CSV: processed/test_v1.csv
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - uses: iterative/setup-cml@v2
+
+      - name: Install deps
+        run: pip install -r requirements.txt matplotlib pytest
+
+      - name: Auth to GCP (WIF)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/323241830917/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+          service_account: dvc-ci@project-a0a1f4bf-9c68-4b93-a84.iam.gserviceaccount.com
+
+      # Deliverable 6: pull versioned test data from DVC (Git-pinned snapshot)
+      - name: DVC pull test data
+        run: dvc pull processed/test_v1.csv.dvc || dvc pull
+
+      # sanity test per feature
+      - name: Run sanity tests
+        run: pytest -v tests/ | tee pytest_output.txt
+
+      # fetch best model from registry (artifacts in GCS) + evaluate + plot
+      - name: Evaluate best model
+        run: python evaluate.py
+
+      # Deliverable 6: CML report on the PR
+      - name: CML report
+        if: github.event_name == 'pull_request'
+        env:
+          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "## CI Report — Stock Movement Predictor" > report.md
+          echo "### Metrics" >> report.md
+          echo '```json' >> report.md
+          cat metrics.json >> report.md
+          echo '```' >> report.md
+          echo "### Confusion matrix" >> report.md
+          cml asset publish confusion.png --md >> report.md
+          echo "" >> report.md
+          echo "### Sanity tests" >> report.md
+          echo '```' >> report.md
+          cat pytest_output.txt >> report.md
+          echo '```' >> report.md
+          cml comment create report.md
