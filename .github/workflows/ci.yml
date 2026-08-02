@@ -24,7 +24,7 @@ jobs:
       - uses: iterative/setup-cml@v2
 
       - name: Install deps
-        run: pip install -r requirements.txt matplotlib pytest
+        run: pip install -r requirements.txt matplotlib pytest && pip install "pathspec==0.12.1"
 
       - name: Auth to GCP (WIF)
         uses: google-github-actions/auth@v2
