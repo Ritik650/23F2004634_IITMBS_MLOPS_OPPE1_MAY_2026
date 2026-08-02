@@ -1,4 +1,5 @@
-processed/
+# ignore processed data files, but KEEP the .dvc pointers
+processed/*.csv
 StockAnalyticaData/
 feature_repo/data/*.parquet
 feature_repo/data/registry.db
